@@ -192,6 +192,8 @@ class qa_exam_stats_graph {
                 canvas.height = parent.offsetHeight;
                 
                 const data = statsData[category];
+                const maxValue = Math.max(...data.attempted, ...data.correct, ...data.skipped);
+                const step = Math.ceil(maxValue / 5);
 
                 if(category === "perf") {
                     currentChart = new Chart(context, {
@@ -385,7 +387,7 @@ class qa_exam_stats_graph {
                             y: {
                                 beginAtZero: true,
                                 ticks: {
-                                    stepSize: 2, //change to 20 for main site
+                                    stepSize: step,
                                     font: {
                                         size: 10
                                     },
