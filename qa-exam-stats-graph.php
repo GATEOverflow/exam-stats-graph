@@ -420,7 +420,11 @@ class qa_exam_stats_graph {
             }
                     
             // Initialize chart with default category
-            createChart("difficulty");
+            window.addEventListener("load", function() {
+                setTimeout(() => {
+                    createChart("difficulty");
+                }, 200);
+            });
                 
             const categorySelect = document.getElementById("exam-stats-category");
             categorySelect.addEventListener("change", function (e) {
