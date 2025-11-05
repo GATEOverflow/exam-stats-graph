@@ -19,7 +19,16 @@ class qa_exam_stats_graph {
 
     public function output_widget($region, $place, $themeobject, $template, $request, $qa_content)
     {   
-        $data = self::get_stats_data();
+        $handle = qa_request_part(1); 
+        $userid = qa_handle_to_userid($handle);
+        $exam_count = qa_db_read_one_value(qa_db_query_sub(
+            "SELECT COUNT(*) FROM ^exam_results WHERE userid = #",
+            $userid
+        ), true);
+
+        if ($exam_count == 0) return;
+
+        $data = self::get_stats_data($userid);
 
         echo '
         <div class="qa-exam-stats-container">
@@ -44,6 +53,7 @@ class qa_exam_stats_graph {
         </div>
         
         <script>
+        
         (function() {
         
             const statsData = ' . json_encode($data) . ';
@@ -75,21 +85,10 @@ class qa_exam_stats_graph {
                         labels: data.labels,
                         datasets: [
                             {
-                                type: "bar",
-                                label: "Your Accuracy (%)",
-                                data: data.user_accuracy,
-                                backgroundColor: "rgba(59, 130, 246, 0.8)", // blue bar
-                                borderColor: "rgba(59, 130, 246, 1)",
-                                borderWidth: 2,
-                                borderRadius: 4,
-                                borderSkipped: false,
-                                yAxisID: "y",
-                            },
-                            {
                                 type: "line",
                                 label: "Topper\'s Average Accuracy (%)",
                                 data: data.topper_accuracy,
-                                borderColor: "rgba(245, 158, 11, 1)", // yellow line
+                                borderColor: "rgba(245, 158, 11, 1)",
                                 backgroundColor: "rgba(245, 158, 11, 0.2)",
                                 borderWidth: 2,
                                 fill: false,
@@ -97,7 +96,18 @@ class qa_exam_stats_graph {
                                 pointRadius: 4,
                                 pointBackgroundColor: "rgba(245, 158, 11, 1)",
                                 yAxisID: "y"
-                            }
+                            },
+                            {
+                                type: "bar",
+                                label: "Your Accuracy (%)",
+                                data: data.user_accuracy,
+                                backgroundColor: "rgba(59, 130, 246, 0.8)",
+                                borderColor: "rgba(59, 130, 246, 1)",
+                                borderWidth: 2,
+                                borderRadius: 4,
+                                borderSkipped: false,
+                                yAxisID: "y",
+                            },
                         ]
                     },
                     options: {
@@ -107,7 +117,7 @@ class qa_exam_stats_graph {
                             legend: {
                                 position: "top",
                                 labels: {
-                                    usePointStyle: true,
+                                    usePointStyle: false,
                                     padding: 10
                                 }
                             },
@@ -193,115 +203,9 @@ class qa_exam_stats_graph {
                 
                 const data = statsData[category];
                 const maxValue = Math.max(...data.attempted, ...data.correct, ...data.skipped);
-                const step = Math.ceil(maxValue / 5);
-
-                if(category === "perf") {
-                    currentChart = new Chart(context, {
-                    data: {
-                        labels: data.labels,
-                        datasets: [
-                            {
-                                type: "bar",
-                                label: "Your Accuracy (%)",
-                                data: data.user_accuracy,
-                                backgroundColor: "rgba(59, 130, 246, 0.8)", // blue bar
-                                borderColor: "rgba(59, 130, 246, 1)",
-                                borderWidth: 2,
-                                borderRadius: 4,
-                                borderSkipped: false,
-                                yAxisID: "y",
-                            },
-                            {
-                                type: "line",
-                                label: "Topper\'s Average Accuracy (%)",
-                                data: data.topper_accuracy,
-                                borderColor: "rgba(245, 158, 11, 1)", // yellow line
-                                backgroundColor: "rgba(245, 158, 11, 0.2)",
-                                borderWidth: 2,
-                                fill: false,
-                                tension: 0.3,
-                                pointRadius: 4,
-                                pointBackgroundColor: "rgba(245, 158, 11, 1)",
-                                yAxisID: "y"
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: false,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: "top",
-                                labels: {
-                                    usePointStyle: true,
-                                    padding: 10
-                                }
-                            },
-                            title: {
-                                display: true,
-                                // text: "Exam-wise Accuracy Comparison",
-                                color: "#111827",
-                                font: {
-                                    size: 14,
-                                    weight: "600"
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: "rgba(17, 24, 39, 0.95)",
-                                padding: 8,
-                                borderColor: "rgba(75, 85, 99, 0.5)",
-                                borderWidth: 1,
-                                mode: "index",          // <-- important: show all datasets at that index
-                                intersect: false,       // <-- ensures tooltip appears even if cursor is between points
-                                callbacks: {
-                                    label: function(context) {
-                                        const index = context.dataIndex;
-
-                                        if (context.dataset.label.includes("Your")) {
-                                            return `You: ${data.user_accuracy[index]}%`;
-                                        } else if (context.dataset.label.includes("Topper")) {
-                                            return `Topper: ${data.topper_accuracy[index]}%`;
-                                        }
-
-                                        return context.dataset.label + ": " + context.parsed.y + "%";
-                                    }
-                                }
-                            }
-                                
-
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                max: 100,
-                                title: {
-                                    display: true,
-                                    // text: "Accuracy (%)"
-                                },
-                                ticks: {
-                                    stepSize: 20,
-                                    color: "#6b7280"
-                                },
-                                grid: {
-                                    color: "rgba(229, 231, 235, 0.8)",
-                                    drawBorder: false
-                                }
-                            },
-                            x: {
-                                ticks: {
-                                    color: "#6b7280"
-                                },
-                                grid: {
-                                    display: false,
-                                    drawBorder: false
-                                }
-                            }
-                        }
-                    }
-                });
-                }
+                temp = Math.ceil(maxValue / 3);
+                const step = temp;
                 
-                else{
                 currentChart = new Chart(context, {
                     type: "bar",
                     data: {
@@ -416,7 +320,6 @@ class qa_exam_stats_graph {
                         }
                     }
                 });
-}
             }
                     
             // Initialize chart with default category
@@ -425,7 +328,9 @@ class qa_exam_stats_graph {
                     createChart("difficulty");
                 }, 200);
             });
+
                 
+            // Update chart when category changes
             const categorySelect = document.getElementById("exam-stats-category");
             categorySelect.addEventListener("change", function (e) {
                 const value = e.target.value;
@@ -451,7 +356,6 @@ class qa_exam_stats_graph {
     }
     
     public static function get_sample_stats_data() {
-        // Sample data
         return array(
             'difficulty' => array(
                 'labels' => array('Total', 'Easy', 'Medium', 'Hard', '1 Mark', '2 Marks'),
@@ -474,65 +378,70 @@ class qa_exam_stats_graph {
         );
     }
 
-    public static function get_stats_data() {
-        require_once('/var/www/html/qa/qa-plugin/exam-creator/db/selects.php');
-        $handle = qa_request_part(1); 
-        $userid = qa_handle_to_userid($handle);
-        // $userid = qa_get_logged_in_userid();
-        // echo "User ID: $userid<br>";
-        if (!$userid) {
-            return array(); // user not logged in
-        }
+    public static function get_stats_data($userid) {
+        // require_once('/var/www/html/qa/qa-plugin/exam-creator/db/selects.php');s
 
-        // Predefine label sets
-        $difficulty_labels = array('Total', 'Easy', 'Medium', 'Hard', '1 Mark', '2 Marks');
-        $subject_labels = array('Total', 'Aptitude', 'OS', 'Compiler', 'DBMS', 'DS', 'Discrete-math');
+        $difficulty_labels = array('Total', 'Easy', 'Hard', '1 Mark', '2 Marks');
+        $subject_labels = array('Total', 'Aptitude', 'Mathematics', 'DL', 'COA', 'C & DS', 'Algorithms', 'TOC', 'CD', 'OS', 'Databses', 'CN', 'General', 'Other');
         $type_labels = array('Total', 'NAT', 'MCQ', 'MSQ');
 
-        // Initialize counters
         $difficulty_stats = array_fill_keys($difficulty_labels, ['attempted' => 0, 'correct' => 0, 'skipped' => 0]);
         $subject_stats = array_fill_keys($subject_labels, ['attempted' => 0, 'correct' => 0, 'skipped' => 0]);
         $type_stats = array_fill_keys($type_labels, ['attempted' => 0, 'correct' => 0, 'skipped' => 0]);
 
-        // fetch user’s all exam attempts
         $exam_results = qa_db_read_all_assoc(qa_db_query_sub(
-            // "SELECT DISTINCT * FROM ^exam_results WHERE userid = #",
-            "SELECT *
-                FROM (
-                    SELECT *,
-                        ROW_NUMBER() OVER (PARTITION BY examid ORDER BY datetime ASC) as rn
-                    FROM ^exam_results
-                    WHERE userid = #
-                ) AS ordered_attempts
-                WHERE rn = 1;
-            ",
-            $userid
-        ));
+            "SELECT * 
+                FROM ^exam_results 
+                WHERE userid = # 
+                ORDER BY datetime ASC",
+                $userid
+            )
+        );
 
+        //for perf array 
+        $exam_user_percentage = array();
+        $exam_avg_topper_percentage = array();
+        $exam_name = array();
+
+        $exam_marks = array();
         foreach ($exam_results as $result) {
-            // $response_table=array();
-            // $response_table = json_decode($response, true);
+
             $response_table = json_decode(stripslashes($result['responsestring']), true);
-            // echo "Exam Responses: ".json_encode($response_table)."<br>";
-            // echo "Exam Responses 167: ".json_encode($response_table[167])."<br>";
             $examid = $result['examid'];
-            $responses = json_decode($result['responsestring'], true);
-            // if (!$responses) continue;
-            // echo "Exam Responses: ".json_encode($responses)."<br>";
             $exam_info = RetrieveExamInfo_db($examid, "var");
-            // echo "exit retrieve Exam ID: $examid<br>";
-            // echo "Exam ID: $examid<br>";
+
+            array_push($exam_name, $exam_info['name']);
+            $user_marks = $result['marks'];
+            $total_marks = $exam_info['total_marks'];
+            $user_percentage = ($total_marks > 0) ? ($user_marks / $total_marks) * 100 : 0;
+            array_push($exam_user_percentage, $user_percentage);
+
+            $totaltime = $exam_info['duration'];
+            $total_exam_attempts = get_exam_attempts($examid);
+            $limit = max(1, round(0.1 * $total_exam_attempts));
+
+            $limit = 3;
+            $spec = qa_exam_db_examtoppers_selectspec($examid, $totaltime, $limit);
+            $toppers = qa_db_select_with_pending($spec);
+
+            $sum_marks = 0;
+            $count = 0;
+
+            foreach ($toppers as $uid => $row) {
+                $sum_marks += floatval($row['marks']);
+                $count++;
+            }
+
+            $top_avg_marks = ($count > 0) ? $sum_marks / $count : 0;
+            $top_avg_accuracy = ($total_marks > 0) ? ($top_avg_marks / $total_marks) * 100 : 0;
+            array_push($exam_avg_topper_percentage, round($top_avg_accuracy, 2));
+
             if (!$exam_info || empty($exam_info['section'])) continue;
             $section_array=$exam_info["section"];
 
-            // foreach ($exam_info['section'] as $section) {
-            //     foreach ($section['question'] as $question) {
             for($i=0; $i<sizeOf($section_array);$i++)
             {
-                /*Section Name*/
                 $response_status_table_part=array();
-
-                /* category part */
                 $category_array_part=array();
 
                 $section_name = $section_array[$i]["name"];
@@ -540,16 +449,10 @@ class qa_exam_stats_graph {
                 for($j=0; $j<sizeOf($qs_array); $j++)
                 {
                     $postid = $qs_array[$j]["post_id"];
-                    // $qtype = $question['type']; // "multiple choice", "numerical", etc.
                     $qtype = $qs_array[$j]['type'];
-                    // $all_tags = explode(",", $qs_array[$j]["tags"]);
-                    
-                    // $tags_array[$postid] = implode(",", $all_tags);
-                    // $tags = array_map('trim', explode(',', $question['tags']));
                     $tags = array_map('trim', explode(',', $qs_array[$j]['tags']));
-                    // echo " response fetching for post id: $postid <br>";
-                    // echo "response : " .json_decode($result['responsestring'], true). "<br>";
-                    $responses = json_decode($result['responsestring'], true);
+                    $category = $qs_array[$j]['category'];
+                    $responses = json_decode(stripslashes($result['responsestring']), true);
                     $user_response = json_decode($responses[$postid], true);
 
                     $correct_answers = array();
@@ -564,9 +467,6 @@ class qa_exam_stats_graph {
                             $correct_answers[$jj][]=mapalphabettodigit(trim(strtolower($panswer)));
                         }
                     }
-
-                    // echo "Post ID: $postid, User Response: ".json_encode($user_response). "Question Type: $qtype<br>";
-                    // echo "Correct Answers: ".json_encode($correct_answers)."<br>";
                     $status = calc_response_status($correct_answers, $user_response, $qtype);
                     // echo "**************************************Response Status: $status ***********************************<br>";
                     // 0: Not Attempted, 
@@ -576,48 +476,64 @@ class qa_exam_stats_graph {
 
                     $isAttempted = ($status != 0);
                     $isCorrect   = ($status == 1 || $status == 3);
-                    // echo "isAttempted: $isAttempted, isCorrect: $isCorrect, Response Status: $status<br>";
                     $isSkipped   = ($status == 0);
+                    
+                    $cat_map = [
+                        'aptitude'              => 'Aptitude',
+                        // 'discrete mathematics'  => 'DM',
+                        'mathematics'           => 'Mathematics',
+                        'operating-system'      => 'OS',
+                        'compiler-design'       => 'Compilers',
+                        'databases'             => 'Databases',
+                        'data-structures'       => 'C & DS',
+                        'theory-of-computation' => 'TOC',
+                        'digital-logic'         => 'DL',
+                        // 'engineering-mathematics' => 'EM',
+                        'co-and-architecture'   => 'COA',
+                        'computer-networks'     => 'CN',
+                        'general'               => 'General'
+                    ];
 
-                    // Update difficulty stats
-                    foreach ($tags as $tag) {
-                        // echo "Tag: $tag<br>";
+                    $difficulty_map = [
+                        'easy'    => 'Easy',
+                        'difficult'    => 'Hard',
+                        'one-mark'    => '1 Mark',
+                        'two-marks'   => '2 Marks',
+                    ];
+
+                    $type_map = [
+                        'numerical-answers'  => 'NAT',
+                        'msq'                => 'MSQ',
+                        'multiple-selects'   => 'MSQ',
+                        // 'mcq'                => 'MCQ',
+                    ];
+                    
+                    //Subject Area
+                    $category_lower = strtolower(trim($qs_array[$j]['category']));
+                    if (isset($cat_map[$category_lower])) {
+                        self::update_stat($subject_stats[$cat_map[$category_lower]], $isAttempted, $isCorrect, $isSkipped);
+                    } else {
+                        self::update_stat($subject_stats['Other'], $isAttempted, $isCorrect, $isSkipped);
+                    }
+
+                    //Type
+                    foreach($tags as $tag) {
                         $tag_lower = strtolower($tag);
-
-                        // Difficulty-based tags
-                        if (in_array($tag_lower, ['easy', 'medium', 'hard'])) {
-                            self::update_stat($difficulty_stats[$tag_lower == 'easy' ? 'Easy' : ucfirst($tag_lower)], $isAttempted, $isCorrect, $isSkipped);
+                        if (isset($type_map[$tag_lower])) {
+                            $mcq = 0;
+                            self::update_stat($type_stats[$type_map[$tag_lower]], $isAttempted, $isCorrect, $isSkipped);
                         }
-
-                        // Marks-based tags
-                        if (strpos($tag_lower, 'one-mark') !== false) {
-                            self::update_stat($difficulty_stats['1 Mark'], $isAttempted, $isCorrect, $isSkipped);
-                        } elseif (strpos($tag_lower, 'two-marks') !== false) {
-                            self::update_stat($difficulty_stats['2 Marks'], $isAttempted, $isCorrect, $isSkipped);
+                        else{
+                            self::update_stat($type_stats['MCQ'], $isAttempted, $isCorrect, $isSkipped);
                         }
-
-                        // Subject-based tags
-                        if (in_array($tag_lower, ['aptitude', 'os', 'compiler', 'dbms', 'ds', 'discrete-math'])) {
-                            self::update_stat($subject_stats[ucfirst($tag_lower)], $isAttempted, $isCorrect, $isSkipped);
+                    }
+                    
+                    //Difficulty
+                    foreach($tags as $tag) {
+                        $tag_lower = strtolower($tag);
+                        if (isset($difficulty_map[$tag_lower])) {
+                            self::update_stat($difficulty_stats[$difficulty_map[$tag_lower]], $isAttempted, $isCorrect, $isSkipped);
                         }
-
-                        // Type-based tags
-                        $mcq_flag = 1;
-                        if (in_array($tag_lower, ['nat', 'mcq_flag', 'msq', 'numerical-answers','multiple-selects'])) {
-                            $mappedType = 'MCQ'; 
-                            if (strpos($tag_lower, 'nat') !== false || strpos($tag_lower, 'numerical-answers') !== false) {
-                                $mcq_flag =0;
-                                $mappedType = 'NAT';
-                            } elseif (strpos($tag_lower, 'msq') !== false || strpos($tag_lower, 'multiple-selects') !== false) {
-                                $mcq_flag =0;
-                                $mappedType = 'MSQ';
-                            }
-                            self::update_stat($type_stats[$mappedType], $isAttempted, $isCorrect, $isSkipped);
-                        }
-                        // elseif ($mcq_flag == 1) {
-                        //     $mappedType = 'MCQ';
-                        //     self::update_stat($type_stats[$mappedType], $isAttempted, $isCorrect, $isSkipped);
-                        // }
                     }
 
                     // Update total counts
@@ -628,18 +544,11 @@ class qa_exam_stats_graph {
             }
         }
         $performance_data = array(
-            'labels' => array('Exam 1', 'Exam 2', 'Exam 3', 'Exam 4'),
-            'user_accuracy' => array(72, 84, 63, 91), // sample user accuracy %
-            'topper_accuracy' => array(95, 96, 90, 98) // sample topper accuracy %
+            'labels' => array_values($exam_name),
+            'user_accuracy' => array_values($exam_user_percentage),
+            'topper_accuracy' => array_values($exam_avg_topper_percentage)
         );
-        // echo "<pre>";
-        // print_r($difficulty_stats);
-        // echo "</pre>";
-        // echo "<pre>";
-        // print_r($subject_stats);
-        // echo "</pre>";
 
-        // Convert associative stats into arrays for Chart.js
         return array(
             'difficulty' => array(
                 'labels' => $difficulty_labels,
@@ -663,10 +572,7 @@ class qa_exam_stats_graph {
         );
     }
 
-    //helper to increment attempted/correct/skipped.
     private static function update_stat(&$stat, $isAttempted, $isCorrect, $isSkipped) {
-        // echo "isAttempted: $isAttempted, isCorrect: $isCorrect, isSkipped: $isSkipped<br>";
-        // $stat['total']++;
         if ($isAttempted) $stat['attempted']++;
         if ($isCorrect) $stat['correct']++;
         if ($isSkipped) $stat['skipped']++;
