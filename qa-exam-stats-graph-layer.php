@@ -8,14 +8,17 @@ class qa_html_theme_layer extends qa_html_theme_base {
         $this->output('
         <style>
             .qa-exam-stats-container {
-                margin: 10px 10px 10px 30px;
                 padding: 25px;
                 background: #ffffff;
                 border-radius: 12px;
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
                 border: 1px solid #e5e7eb;
-                width: 700px;
                 height: 600px;
+                position: relative;
+                z-index: 100;
+                margin: 10px 30px 10px 30px;
+                min-width: 300px;
+                width: 93%;
                 //horizontal scroll
                 overflow-x: auto;
                 // overflow-y: auto;
@@ -101,9 +104,8 @@ class qa_html_theme_layer extends qa_html_theme_base {
             
             .qa-exam-stats-chart-canvas {
                 width: 100%;
-                height: 300px !important;
+                height: 350px !important;
                 max-height: 600px;
-                responsive: true;
                 min-height: 350px !important;
                 overflow-x: auto;
             }
