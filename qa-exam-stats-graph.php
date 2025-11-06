@@ -56,7 +56,9 @@ class qa_exam_stats_graph {
         
         (function() {
         
-            const statsData = ' . json_encode($data) . ';
+            const statsData = ';
+            echo json_encode($data);
+            echo ';
 
             let currentChart = null;
 
@@ -77,7 +79,7 @@ class qa_exam_stats_graph {
                 canvas.height = parent.offsetHeight;
 
                 const data = statsData["perf"];
-                console.log(data);
+                // console.log(data);
 
 
                 currentChart = new Chart(context, {
@@ -138,8 +140,13 @@ class qa_exam_stats_graph {
                                 mode: "index",          // <-- important: show all datasets at that index
                                 intersect: false,       // <-- ensures tooltip appears even if cursor is between points
                                 callbacks: {
+                                    title: function(tooltipItems) {
+                                        const index = tooltipItems[0].dataIndex;
+                                        return statsData.perf.exam_names[index];
+                                    },
                                     label: function(context) {
                                         const index = context.dataIndex;
+                                        const data = statsData.perf;
 
                                         if (context.dataset.label.includes("Your")) {
                                             return `You: ${data.user_accuracy[index]}%`;
@@ -323,27 +330,28 @@ class qa_exam_stats_graph {
             }
                     
             // Initialize chart with default category
-            window.addEventListener("load", function() {
-                setTimeout(() => {
-                    createChart("difficulty");
-                }, 200);
+            window.addEventListener("DOMContentLoaded", () => {
+                requestAnimationFrame(() => createChart("difficulty"));
             });
-
                 
             // Update chart when category changes
             const categorySelect = document.getElementById("exam-stats-category");
             categorySelect.addEventListener("change", function (e) {
                 const value = e.target.value;
                 if (value === "perf") {
-                    createPerformanceChart();
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            createPerformanceChart();
+                        });
+                    });
                 }
                 else {
-                    createChart(e.target.value);
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            createChart(e.target.value);
+                        });
+                    });
                 }
-            });
-            
-            const observer = new MutationObserver(() => {
-                createChart("difficulty");
             });
                     
         })();
@@ -353,29 +361,6 @@ class qa_exam_stats_graph {
     
     public function init_queries($tableslc) {
         return null;
-    }
-    
-    public static function get_sample_stats_data() {
-        return array(
-            'difficulty' => array(
-                'labels' => array('Total', 'Easy', 'Medium', 'Hard', '1 Mark', '2 Marks'),
-                'attempted' => array(150, 45, 50, 35, 60, 40),
-                'correct' => array(100, 38, 32, 18, 48, 32),
-                'skipped' => array(20, 5, 8, 5, 7, 3)
-            ),
-            'subject' => array(
-                'labels' => array('Total', 'Aptitude', 'OS', 'Compiler', 'DBMS', 'DS'),
-                'attempted' => array(150, 25, 30, 28, 35, 32),
-                'correct' => array(100, 20, 22, 18, 24, 26),
-                'skipped' => array(20, 3, 4, 5, 4, 4)
-            ),
-            'type' => array(
-                'labels' => array('Total', 'NAT', 'mcq_flag', 'MSQ'),
-                'attempted' => array(150, 40, 70, 40),
-                'correct' => array(100, 28, 50, 22),
-                'skipped' => array(20, 6, 8, 6)
-            )
-        );
     }
 
     public static function get_stats_data($userid) {
@@ -402,6 +387,7 @@ class qa_exam_stats_graph {
         $exam_user_percentage = array();
         $exam_avg_topper_percentage = array();
         $exam_name = array();
+        $exam_id = array();
 
         $exam_marks = array();
         foreach ($exam_results as $result) {
@@ -409,32 +395,35 @@ class qa_exam_stats_graph {
             $response_table = json_decode(stripslashes($result['responsestring']), true);
             $examid = $result['examid'];
             $exam_info = RetrieveExamInfo_db($examid, "var");
+            
+            if($total_questions >= 30){   
+                $exam_string = 'ExamID ' . $examid;
+                array_push($exam_id, $exam_string);
+                array_push($exam_name, $exam_info['name']);
+                $user_marks = $result['marks'];
+                $total_marks = $exam_info['total_marks'];
+                $total_questions = $exam_info['total_qs'];
+                $user_percentage = ($total_marks > 0) ? ($user_marks / $total_marks) * 100 : 0;
+                array_push($exam_user_percentage, round($user_percentage,2));
 
-            array_push($exam_name, $exam_info['name']);
-            $user_marks = $result['marks'];
-            $total_marks = $exam_info['total_marks'];
-            $user_percentage = ($total_marks > 0) ? ($user_marks / $total_marks) * 100 : 0;
-            array_push($exam_user_percentage, $user_percentage);
+                $totaltime = $exam_info['duration'];
+                $total_exam_attempts = get_exam_attempts($examid);
+                $limit = max(1, round(0.1 * $total_exam_attempts));
+                $spec = qa_exam_db_examtoppers_selectspec($examid, $totaltime, $limit);
+                $toppers = qa_db_select_with_pending($spec);
 
-            $totaltime = $exam_info['duration'];
-            $total_exam_attempts = get_exam_attempts($examid);
-            $limit = max(1, round(0.1 * $total_exam_attempts));
+                $sum_marks = 0;
+                $count = 0;
 
-            $limit = 3;
-            $spec = qa_exam_db_examtoppers_selectspec($examid, $totaltime, $limit);
-            $toppers = qa_db_select_with_pending($spec);
+                foreach ($toppers as $uid => $row) {
+                    $sum_marks += floatval($row['marks']);
+                    $count++;
+                }
 
-            $sum_marks = 0;
-            $count = 0;
-
-            foreach ($toppers as $uid => $row) {
-                $sum_marks += floatval($row['marks']);
-                $count++;
+                $top_avg_marks = ($count > 0) ? $sum_marks / $count : 0;
+                $top_avg_accuracy = ($total_marks > 0) ? ($top_avg_marks / $total_marks) * 100 : 0;
+                array_push($exam_avg_topper_percentage, round($top_avg_accuracy, 2));
             }
-
-            $top_avg_marks = ($count > 0) ? $sum_marks / $count : 0;
-            $top_avg_accuracy = ($total_marks > 0) ? ($top_avg_marks / $total_marks) * 100 : 0;
-            array_push($exam_avg_topper_percentage, round($top_avg_accuracy, 2));
 
             if (!$exam_info || empty($exam_info['section'])) continue;
             $section_array=$exam_info["section"];
@@ -544,7 +533,8 @@ class qa_exam_stats_graph {
             }
         }
         $performance_data = array(
-            'labels' => array_values($exam_name),
+            'labels' => array_values($exam_id),
+            'exam_names' => array_values($exam_name),
             'user_accuracy' => array_values($exam_user_percentage),
             'topper_accuracy' => array_values($exam_avg_topper_percentage)
         );
