@@ -40,7 +40,7 @@ class qa_exam_stats_graph {
             <div class="qa-exam-stats-controls">
                 <label for="exam-stats-category" class="qa-exam-stats-label">View Statistics By:</label>
                 <select id="exam-stats-category" class="qa-exam-stats-select">
-                    <option value="difficulty">Difficulty Level</option>
+                    <option value="difficulty" selected>Difficulty Level</option>
                     <option value="subject">Subject Area</option>
                     <option value="type">Question Type</option>
                     <option value="perf">Exam Performance</option>
@@ -334,6 +334,10 @@ class qa_exam_stats_graph {
            
             
             window.addEventListener("DOMContentLoaded", () => {
+                const select = document.getElementById("exam-stats-category");
+
+                // Force dropdown to show Difficulty
+                select.value = "difficulty";
                 requestAnimationFrame(() => createChart("difficulty"));
             });
             
