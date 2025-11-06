@@ -89,7 +89,7 @@ class qa_exam_stats_graph {
                         datasets: [
                             {
                                 type: "line",
-                                label: "Topper\'s Average Accuracy (%)",
+                                label: "Topper\'s Average Score (%)",
                                 data: data.topper_accuracy,
                                 borderColor: "rgba(245, 158, 11, 1)",
                                 backgroundColor: "rgba(245, 158, 11, 0.2)",
@@ -102,7 +102,7 @@ class qa_exam_stats_graph {
                             },
                             {
                                 type: "bar",
-                                label: "Your Accuracy (%)",
+                                label: "Your Score (%)",
                                 data: data.user_accuracy,
                                 backgroundColor: "rgba(59, 130, 246, 0.8)",
                                 borderColor: "rgba(59, 130, 246, 1)",
