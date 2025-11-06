@@ -401,6 +401,7 @@ class qa_exam_stats_graph {
         $exam_labels = array();
 
         $exam_marks = array();
+        $category_dict = array();
         foreach ($exam_results as $result) {
             $response_table = json_decode(stripslashes($result['responsestring']), true);
             $examid = $result['examid'];
@@ -451,6 +452,7 @@ class qa_exam_stats_graph {
                     $qtype = $qs_array[$j]['type'];
                     $tags = array_map('trim', explode(',', $qs_array[$j]['tags']));
                     $category = $qs_array[$j]['category'];
+                    $category_dict[$category] += 1;
                     $responses = json_decode(stripslashes($result['responsestring']), true);
                     $user_response = json_decode($responses[$postid], true);
 
@@ -558,7 +560,7 @@ class qa_exam_stats_graph {
             'user_accuracy' => array_values($exam_user_percentage),
             'topper_accuracy' => array_values($exam_avg_topper_percentage)
         );
-
+        echo '<script> console.log('.json_encode($category_dict).') </script>';
         return array(
             'difficulty' => array(
                 'labels' => $difficulty_labels,
