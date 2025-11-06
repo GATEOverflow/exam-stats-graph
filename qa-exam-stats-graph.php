@@ -341,11 +341,11 @@ class qa_exam_stats_graph {
                 requestAnimationFrame(() => createChart("difficulty"));
             });
             
-            window.addEventListener("load", function () {
-                if (examStatsChart) {
-                    examStatsChart.resize();
-                }
-            });
+            // window.addEventListener("load", function () {
+            //     if (examStatsChart) {
+            //         examStatsChart.resize();
+            //     }
+            // });
                   
             // Update chart when category changes
             const categorySelect = document.getElementById("exam-stats-category");
@@ -379,7 +379,37 @@ class qa_exam_stats_graph {
         // require_once('/var/www/html/qa/qa-plugin/exam-creator/db/selects.php');
         
         $difficulty_labels = array('Total', 'Easy', 'Medium', 'Hard', '1 Mark', '2 Marks');
-        $subject_labels = array('Total', 'Aptitude', 'Mathematics', 'DL', 'COA', 'C & DS', 'Algorithms', 'TOC', 'CD', 'OS', 'Databses', 'CN', 'General', 'Other');
+        $subject_labels = array(
+            'Total',
+            // Aptitude
+            'A. Aptitude',
+            'G. Aptitude',
+            'Q. Aptitude',
+            'V. Aptitude',
+            'S. Aptitude',
+
+            'EM', // Engg Maths (Calculus, Probability, Linear Algebra)
+            'DM', // Discrete Maths, Combinatorics, Logic, Graph Theory
+
+            // Core CS
+            'DL',
+            'COA',
+            'C & DS',
+            'Algorithms',
+            'TOC',
+            'CD',
+            'OS',
+            'Databses',
+            'CN',
+
+            //DA
+            'AI',
+            'ML',
+            'Python',
+            
+            'Other'
+        );
+
         $type_labels = array('Total', 'NAT', 'MCQ', 'MSQ');
 
         $difficulty_stats = array_fill_keys($difficulty_labels, ['attempted' => 0, 'correct' => 0, 'skipped' => 0]);
@@ -407,34 +437,36 @@ class qa_exam_stats_graph {
             $examid = $result['examid'];
             $exam_info = RetrieveExamInfo_db($examid, "var");
 
-            $exam_string = 'ExamID ' . $examid;
-            array_push($exam_ids, $examid);
-            array_push($exam_labels, $exam_string);
-            array_push($exam_name, $exam_info['name']);
-            $user_marks = $result['marks'];
-            $total_marks = $exam_info['total_marks'];
-            $user_percentage = ($total_marks > 0) ? ($user_marks / $total_marks) * 100 : 0;
-            if ($user_percentage < 0) $user_percentage = 0; //prevent negative percentages
-            array_push($exam_user_percentage, round($user_percentage,2));
+            if($exam_info['total_qs'] >= 30){   
+                $exam_string = 'ExamID ' . $examid;
+                array_push($exam_ids, $examid);
+                array_push($exam_labels, $exam_string);
+                array_push($exam_name, $exam_info['name']);
+                $user_marks = $result['marks'];
+                $total_marks = $exam_info['total_marks'];
+                $user_percentage = ($total_marks > 0) ? ($user_marks / $total_marks) * 100 : 0;
+                if ($user_percentage < 0) $user_percentage = 0; //prevent negative percentages
+                array_push($exam_user_percentage, round($user_percentage,2));
 
-            $totaltime = $exam_info['duration'];
-            $total_exam_attempts = get_exam_attempts($examid);
-            $limit = max(1, round(0.1 * $total_exam_attempts));
-            $spec = qa_exam_db_examtoppers_selectspec($examid, $totaltime, $limit);
-            $toppers = qa_db_select_with_pending($spec);
+                $totaltime = $exam_info['duration'];
+                $total_exam_attempts = get_exam_attempts($examid);
+                $limit = max(1, round(0.1 * $total_exam_attempts));
+                $spec = qa_exam_db_examtoppers_selectspec($examid, $totaltime, $limit);
+                $toppers = qa_db_select_with_pending($spec);
 
-            $sum_marks = 0;
-            $count = 0;
+                $sum_marks = 0;
+                $count = 0;
 
-            foreach ($toppers as $uid => $row) {
-                $sum_marks += floatval($row['marks']);
-                $count++;
+                foreach ($toppers as $uid => $row) {
+                    $sum_marks += floatval($row['marks']);
+                    $count++;
+                }
+
+                $top_avg_marks = ($count > 0) ? $sum_marks / $count : 0;
+                $top_avg_accuracy = ($total_marks > 0) ? ($top_avg_marks / $total_marks) * 100 : 0;
+                if ($top_avg_accuracy > 99) $top_avg_accuracy = 99; //prevent 10%
+                array_push($exam_avg_topper_percentage, round($top_avg_accuracy, 2));
             }
-
-            $top_avg_marks = ($count > 0) ? $sum_marks / $count : 0;
-            $top_avg_accuracy = ($total_marks > 0) ? ($top_avg_marks / $total_marks) * 100 : 0;
-            if ($top_avg_accuracy > 99) $top_avg_accuracy = 99; //prevent 10%
-            array_push($exam_avg_topper_percentage, round($top_avg_accuracy, 2));
 
             if (!$exam_info || empty($exam_info['section'])) continue;
             $section_array=$exam_info["section"];
@@ -480,20 +512,36 @@ class qa_exam_stats_graph {
                     $isSkipped   = ($status == 0);
                     
                     $cat_map = [
-                        'aptitude'              => 'Aptitude',
-                        // 'discrete mathematics'  => 'DM',
-                        'mathematics'           => 'Mathematics',
-                        'operating System'      => 'OS',
-                        'Compiler-design'       => 'Compilers',
-                        'databases'             => 'Databases',
-                        'programming-in-c'       => 'C & DS',
-                        'algorithms'            => 'Algorithms',
-                        'theory-of-computation' => 'TOC',
-                        'digital-logic'         => 'DL',
-                        // 'engineering-mathematics' => 'EM',
-                        'co-and-architecture'   => 'COA',
-                        'computer-networks'     => 'CN',
-                        'general'               => 'General'
+                        'analytical aptitude'      => 'A. Aptitude',
+                        'general aptitude'         => 'G. Aptitude',
+                        'quantitative aptitude'    => 'Q. Aptitude',
+                        'verbal aptitude'          => 'V. Aptitude',
+                        'spatial aptitude'         => 'S. Aptitude',
+
+                        'calculus'                 => 'EM',
+                        'probability'              => 'EM',
+                        'linear algebra'           => 'EM',
+                        'discrete mathematics'     => 'DM',
+                        'set theory & algebra'     => 'DM',
+                        'combinatory'              => 'DM',
+                        'graph theory'             => 'DM',
+                        'mathematical logic'       => 'DM',
+
+                        'digital logic'            => 'DL',
+                        'co and architecture'      => 'COA',
+                        'computer networks'        => 'CN',
+                        'programming in c'         => 'C & DS',
+                        'ds'                       => 'C & DS',
+
+                        'algorithms'               => 'Algorithms',
+                        'theory of computation'    => 'TOC',
+                        'compiler design'          => 'CD',
+                        'operating system'         => 'OS',
+                        'databases'                => 'Databses',
+
+                        'artificial intelligence'  => 'AI',
+                        'machine learning'         => 'ML',
+                        'programming in python'    => 'Python',
                     ];
 
                     $difficulty_map = [
