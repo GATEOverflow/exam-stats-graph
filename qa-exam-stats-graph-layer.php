@@ -104,7 +104,7 @@ class qa_html_theme_layer extends qa_html_theme_base {
             
             .qa-exam-stats-chart-canvas {
                 width: 100%;
-                height: 350px !important;
+                height: 300px !important;
                 max-height: 600px;
                 min-height: 350px !important;
                 overflow-x: auto;
