@@ -213,8 +213,11 @@ class qa_exam_stats_graph {
                 
                 const data = statsData[category];
                 const maxValue = Math.max(...data.attempted, ...data.correct, ...data.skipped);
-                temp = Math.ceil(maxValue / 3);
-                const step = temp;
+
+                let step = 
+                (category === "subject") ? Math.ceil(maxValue / 10) * 10   // round to nearest 10
+                : Math.ceil(maxValue / 3);
+
                 
                 currentChart = new Chart(context, {
                     type: "bar",
@@ -478,6 +481,7 @@ class qa_exam_stats_graph {
 
                 $section_name = $section_array[$i]["name"];
                 $qs_array= $section_array[$i]["question"];
+                echo '<script> console.log('.json_encode($qs_array).') </script>';
                 for($j=0; $j<sizeOf($qs_array); $j++)
                 {
                     $postid = $qs_array[$j]["post_id"];
@@ -511,7 +515,7 @@ class qa_exam_stats_graph {
                     $isCorrect   = ($status == 1 || $status == 3);
                     $isSkipped   = ($status == 0);
                     
-                    $cat_map = [
+                    $subject_map = [
                         'analytical aptitude'      => 'A. Aptitude',
                         'general aptitude'         => 'G. Aptitude',
                         'quantitative aptitude'    => 'Q. Aptitude',
@@ -560,22 +564,20 @@ class qa_exam_stats_graph {
                     
                     //Subject Area
                     $category_lower = strtolower(trim($qs_array[$j]['category']));
-                    if (isset($cat_map[$category_lower])) {
-                        self::update_stat($subject_stats[$cat_map[$category_lower]], $isAttempted, $isCorrect, $isSkipped);
-                    } else {
-                        self::update_stat($subject_stats['Other'], $isAttempted, $isCorrect, $isSkipped);
-                    }
+                    $mapped = $subject_map[$category_lower] ?? 'Other';
+                    self::update_stat($subject_stats[$mapped], $isAttempted, $isCorrect, $isSkipped);
 
                     //Type
-                    foreach($tags as $tag) {
+                    $question_type = 'MCQ'; // default
+
+                    foreach ($tags as $tag) {
                         $tag_lower = strtolower($tag);
                         if (isset($type_map[$tag_lower])) {
-                            self::update_stat($type_stats[$type_map[$tag_lower]], $isAttempted, $isCorrect, $isSkipped);
+                            $question_type = $type_map[$tag_lower];
+                            break;
                         }
-                        // else{
-                        //     self::update_stat($type_stats['MCQ'], $isAttempted, $isCorrect, $isSkipped);
-                        // }
                     }
+                    self::update_stat($type_stats[$question_type], $isAttempted, $isCorrect, $isSkipped);
 
                     //Difficulty
                     foreach ($tags as $tag) {
