@@ -212,12 +212,10 @@ class qa_exam_stats_graph {
                 canvas.height = parent.offsetHeight;
                 
                 const data = statsData[category];
-                const maxValue = Math.max(...data.attempted, ...data.correct, ...data.skipped);
-
-                let step = 
-                (category === "subject") ? Math.ceil(maxValue / 10) * 10   // round to nearest 10
-                : Math.ceil(maxValue / 3);
-
+                const maxValue = Math.max(...data.attempted, ...data.skipped);
+                
+                // 4 intervals for all graph
+                let step = Math.ceil(maxValue / 4);
                 
                 currentChart = new Chart(context, {
                     type: "bar",
