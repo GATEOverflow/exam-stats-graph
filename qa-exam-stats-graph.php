@@ -114,7 +114,7 @@ class qa_exam_stats_graph {
                         ]
                     },
                     options: {
-                        responsive: false,
+                        responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
                             legend: {
@@ -252,7 +252,7 @@ class qa_exam_stats_graph {
                         ]
                     },
                     options: {
-                        responsive: false,
+                        responsive: true,
                         maintainAspectRatio: false,
                         interaction: {
                             mode: "index",
