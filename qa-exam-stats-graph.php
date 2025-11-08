@@ -375,7 +375,8 @@ class qa_exam_stats_graph {
     
     public function init_queries($tableslc) {
         return null;
-    }  
+    }
+      
     public static function get_stats_data($userid) {
         // require_once('/var/www/html/qa/qa-plugin/exam-creator/db/selects.php');
         
@@ -434,13 +435,10 @@ class qa_exam_stats_graph {
 
         $exam_marks = array();
         $category_dict = array();
-        $exam_accesslist_dict = array();
         foreach ($exam_results as $result) {
             $response_table = json_decode(stripslashes($result['responsestring']), true);
             $examid = $result['examid'];
             $exam_info = RetrieveExamInfo_db($examid, "var");
-            $exam_accesslist_dict[$examid] = $exam_info['accesslists'];
-            echo '<script> console.log('.json_encode($exam_accesslist_dict).') </script>';
 
             // if($exam_info['total_qs'] >= 30){   //show all exams for now
                 $exam_string = 'ExamID ' . $examid;
