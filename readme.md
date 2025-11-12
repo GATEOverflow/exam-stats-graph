@@ -10,7 +10,9 @@ Displays exam question statistics with graphs based on difficulty, subject, and 
 
 ## Screenshots
 
-![](Assets/Screenshot.png)
+![](Images/img1.png)
+![](Images/img2.png)
+![](Images/img3.png)
 
 ## License
 
