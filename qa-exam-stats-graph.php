@@ -457,12 +457,14 @@ class qa_exam_stats_graph {
             if (!isset($accesslist_data[$acc])) {
                 $accesslist_data[$acc] = [
                     'count' => 0,
-                    'examids' => []
+                    'examids' => [],
+                    'name' => []
                 ];
             }
 
             $accesslist_data[$acc]['count']++; 
             $accesslist_data[$acc]['examids'][] = $examid;
+            $accesslist_data[$acc]['name'][] = $exam_info['name'];
 
             // if($exam_info['total_qs'] >= 30){   //show all exams for now
                 $exam_string = 'ExamID ' . $examid;
