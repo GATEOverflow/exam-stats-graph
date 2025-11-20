@@ -449,7 +449,10 @@ class qa_exam_stats_graph {
                 ),
                 true
             );
-            $acc = $row['accesslists'];
+            $acc = $exam_row['accesslists'];
+            if ($acc === null || $acc === "") {
+                $acc = "(none)";
+            }
 
             if (!isset($accesslist_count[$acc])) {
                 $accesslist_count[$acc] = 0;
