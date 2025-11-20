@@ -454,12 +454,15 @@ class qa_exam_stats_graph {
                 $acc = "(none)";
             }
 
-            if (!isset($accesslist_count[$acc])) {
-                $accesslist_count[$acc] = 0;
+            if (!isset($accesslist_data[$acc])) {
+                $accesslist_data[$acc] = [
+                    'count' => 0,
+                    'examids' => []
+                ];
             }
-            $accesslist_count[$acc]++; 
 
-            echo '<script> console.log('.json_encode($accesslist_count).') </script>';
+            $accesslist_count[$acc]++; 
+            $accesslist_data[$acc]['examids'][] = $examid;
 
             // if($exam_info['total_qs'] >= 30){   //show all exams for now
                 $exam_string = 'ExamID ' . $examid;
@@ -651,6 +654,7 @@ class qa_exam_stats_graph {
                 }
             }
         }
+        echo '<script> console.log('.json_encode($accesslist_count).') </script>';
         $performance_data = array(
             'id' => array_values($exam_ids),
             'labels' => array_values($exam_labels),
