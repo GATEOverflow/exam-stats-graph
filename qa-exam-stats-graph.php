@@ -169,12 +169,12 @@ class qa_exam_stats_graph {
                                     title: function(tooltipItems) {
                                         const index = tooltipItems[0].dataIndex;
                                         const xLabel = data.labels[index];
-                                        const examName = data.perf.exam_names[index];
+                                        const examName = data.exam_names[index];
                                         return xLabel + "\n" + examName;
                                     },
                                     label: function(context) {
                                         const index = context.dataIndex;
-                                        const data = data.perf;
+                                        // const chartData = context.chart.data.datasets[context.datasetIndex].data;
 
                                         if (context.dataset.label.includes("Your")) {
                                             return `You: ${data.user_accuracy[index]}%`;
