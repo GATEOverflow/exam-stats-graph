@@ -46,7 +46,7 @@ class qa_exam_stats_graph {
                 <label for="exam-stats-category" class="qa-exam-stats-label">View Statistics By:</label>
                 <select id="exam-stats-category" class="qa-exam-stats-select">
                     <option value="difficulty" selected>Difficulty Level</option>
-                    <!--<option value="subject">Subject Area</option>-->
+                    <option value="subject">Subject Area</option>
                     <option value="type">Question Type</option>
                     <option value="perf">Exam Performance (Overall)</option>
                     <optgroup label="Exam Performance by Accesslist" id="accesslist-group"></optgroup>
@@ -373,6 +373,15 @@ class qa_exam_stats_graph {
                 // Force dropdown to show Difficulty
                 select.value = "difficulty";
                 requestAnimationFrame(() => createChart("difficulty"));
+            });    
+            document.addEventListener("DOMContentLoaded", function () {
+                const allowedDomains = ["gateoverflow.in", "surabi.gateoverflow.in", "db.gateoverflow.in"];
+                const hostname = window.location.hostname;
+            
+                if (!allowedDomains.includes(hostname)) {
+                    const subjectOption = document.querySelector("#exam-stats-category option[value=\"subject\"]");
+                    if (subjectOption) subjectOption.remove();
+                }
             });
             
             const accesslistGroup = document.getElementById("accesslist-group");
