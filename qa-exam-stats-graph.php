@@ -737,7 +737,7 @@ class qa_exam_stats_graph {
         );
         // echo '<script> console.log('.json_encode($category_dict).') </script>';
 
-        echo '<script> console.log('.json_encode($accesslist_data).') </script>';
+        // echo '<script> console.log('.json_encode($accesslist_data).') </script>';
         $accesslist_filtered = [];
         // only include accesslists that user has exams in
         foreach ($accesslist_data as $key => $d) {
