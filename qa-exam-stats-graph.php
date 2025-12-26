@@ -590,6 +590,33 @@ class qa_exam_stats_graph {
             );
             $date_array[$resultid] = $result['datetime'];
 
+            require_once('/var/www/html/qa/qa-plugin/exam-creator/qa-ec-view-accesslist.php');
+            $accesslist_ids_raw = qa_db_usermeta_get($userid, 'accesslists');
+
+            $accesslist_ids = array_filter(
+                array_map('trim', explode(',', $accesslist_ids_raw))
+            );
+            echo '<script> console.log("User Accesslists: '.json_encode($accesslist_ids).'"); </script>';
+            $accesslist_names_map = [];
+
+            if (!empty($accesslist_ids)) {
+                $placeholders = implode(',', array_fill(0, count($accesslist_ids), '#'));
+
+                $query = "
+                    SELECT listid, name
+                    FROM ^accesslists
+                    WHERE listid IN ($placeholders)
+                ";
+
+                $rows = qa_db_query_sub($query, ...$accesslist_ids);
+
+                while ($row = qa_db_read_one_assoc($rows, true)) {
+                    $accesslist_names_map[(string)$row['listid']] = $row['name'];
+                }
+            }
+            $accesslist_names_map['(none)'] = 'Open Exams';
+            echo '<script> console.log("Accesslist Names Map: '.json_encode($accesslist_names_map).'"); </script>';
+
             $acc_raw = $exam_row['accesslists'];
 
             if ($acc_raw === null || trim($acc_raw) === "") {
