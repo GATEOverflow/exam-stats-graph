@@ -633,6 +633,10 @@ class qa_exam_stats_graph {
             }
 
             foreach ($acc_list as $acc) {
+                //skip accesslists not present in map
+                if (!isset($accesslist_names_map[$acc])) {
+                    continue;
+                }
                 if (!isset($accesslist_data[$acc])) {
                     $accesslist_data[$acc] = [
                         'count' => 0,
