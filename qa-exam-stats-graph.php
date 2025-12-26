@@ -529,27 +529,6 @@ class qa_exam_stats_graph {
             'multiple-selects'   => 'MSQ',
             // 'mcq'                => 'MCQ',
         ];
-        // for 2025
-            // 1: Go test
-            // 3: free go, go classes test
-            // 4: Go classes cse
-            // 5: Go classes DA test
-            // 6: Paid weekly
-            // 7: free weekly quiz
-            // 8: IIIT-H
-        // $accesslist_names_map = [        
-        //     "1" => "GATEOverflow Test Series 2024 FLT", //2024 full length
-        //     "2" => "GATEOverflow Test Series 2024", // 2024
-        //     "3" => "GATEOverflow Test Series 2023", // 2023
-        //     "0" => "Free CSE Weekly Quiz and Test",
-        //     "6166" => "GO Classes CSE Test Series",
-        //     "18261" => "GO Classes DA Test Series",
-        //     "181161" => "Paid CSE Weekly Quiz",
-        //     "7" => "Free DA Weekly Quiz",
-        //     "8" => "IIIT-H Test Series",
-        //     "(none)" => "Open Exams"
-        // ];
-
 
         $difficulty_stats = array_fill_keys($difficulty_labels, ['attempted' => 0, 'correct' => 0, 'skipped' => 0]);
         $subject_stats = array_fill_keys($subject_labels, ['attempted' => 0, 'correct' => 0, 'skipped' => 0]);
@@ -595,10 +574,10 @@ class qa_exam_stats_graph {
             $accesslist_ids = array_filter(
                 array_map('trim', explode(',', $accesslist_ids_raw))
             );
-            echo '
-            <script>
-                console.log("User Accesslists: ", ' .json_encode($accesslist_ids). ');
-            </script>';
+            // echo '
+            // <script>
+            //     console.log("User Accesslists: ", ' .json_encode($accesslist_ids). ');
+            // </script>';
             $accesslist_names_map = [];
 
             if (!empty($accesslist_ids)) {
@@ -617,11 +596,11 @@ class qa_exam_stats_graph {
                 }
             }
             $accesslist_names_map['(none)'] = 'Open Exams';
-            echo '
-            <script>
-                console.log("User Accesslists:", ' . json_encode($accesslist_ids) . ');
-                console.log("Accesslist Names Map:", ' . json_encode($accesslist_names_map) . ');
-            </script>';
+            // echo '
+            // <script>
+            //     console.log("User Accesslists:", ' . json_encode($accesslist_ids) . ');
+            //     console.log("Accesslist Names Map:", ' . json_encode($accesslist_names_map) . ');
+            // </script>';
 
 
             $acc_raw = $exam_row['accesslists'];
