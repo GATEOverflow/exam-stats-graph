@@ -193,7 +193,10 @@ class qa_exam_stats_graph {
                                         const xLabel = data.labels[index];
                                         const examName = data.exam_names[index];
                                         const examDate = data.date[index].split(" ")[0];
-                                        return xLabel + "\n" + "Exam: " + examName + "\n" + "Date: " + examDate;
+                                        return "Exam: " + xLabel + "\n" 
+                                        // + "Exam ID: " + data.id[index] + "\n" 
+                                        + "Exam Name: " + examName + "\n" 
+                                        + "Date Taken: " + examDate;
                                     },
                                     label: function(context) {
                                         const index = context.dataIndex;
@@ -611,9 +614,9 @@ class qa_exam_stats_graph {
             }
 
             // if($exam_info['total_qs'] >= 30){   //show all exams for now
-                $exam_string = 'ExamID ' . $examid;
+                $exam_no = count($exam_labels) + 1;
                 array_push($exam_ids, $examid);
-                array_push($exam_labels, $exam_string);
+                array_push($exam_labels, $exam_no);
                 array_push($exam_name, $exam_info['name']);
                 $user_marks = $result['marks'];
                 $total_marks = $exam_info['total_marks'];
