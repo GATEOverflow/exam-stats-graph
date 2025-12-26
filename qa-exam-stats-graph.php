@@ -529,8 +529,7 @@ class qa_exam_stats_graph {
             'multiple-selects'   => 'MSQ',
             // 'mcq'                => 'MCQ',
         ];
-        $accesslist_names_map = [
-            // for 2025
+        // for 2025
             // 1: Go test
             // 3: free go, go classes test
             // 4: Go classes cse
@@ -538,18 +537,18 @@ class qa_exam_stats_graph {
             // 6: Paid weekly
             // 7: free weekly quiz
             // 8: IIIT-H
-            
-            "1" => "GATEOverflow Test Series 2024 FLT", //2024 full length
-            "2" => "GATEOverflow Test Series 2024", // 2024
-            "3" => "GATEOverflow Test Series 2023", // 2023
-            "0" => "Free CSE Weekly Quiz and Test",
-            "6166" => "GO Classes CSE Test Series",
-            "18261" => "GO Classes DA Test Series",
-            "181161" => "Paid CSE Weekly Quiz",
-            "7" => "Free DA Weekly Quiz",
-            "8" => "IIIT-H Test Series",
-            "(none)" => "Open Exams"
-        ];
+        // $accesslist_names_map = [        
+        //     "1" => "GATEOverflow Test Series 2024 FLT", //2024 full length
+        //     "2" => "GATEOverflow Test Series 2024", // 2024
+        //     "3" => "GATEOverflow Test Series 2023", // 2023
+        //     "0" => "Free CSE Weekly Quiz and Test",
+        //     "6166" => "GO Classes CSE Test Series",
+        //     "18261" => "GO Classes DA Test Series",
+        //     "181161" => "Paid CSE Weekly Quiz",
+        //     "7" => "Free DA Weekly Quiz",
+        //     "8" => "IIIT-H Test Series",
+        //     "(none)" => "Open Exams"
+        // ];
 
 
         $difficulty_stats = array_fill_keys($difficulty_labels, ['attempted' => 0, 'correct' => 0, 'skipped' => 0]);
