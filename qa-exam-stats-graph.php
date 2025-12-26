@@ -615,7 +615,11 @@ class qa_exam_stats_graph {
                 }
             }
             $accesslist_names_map['(none)'] = 'Open Exams';
-            echo '<script> console.log("Accesslist Names Map: '.json_encode($accesslist_names_map).'"); </script>';
+            echo '
+            <script>
+                console.log("User Accesslists:", ' . json_encode($accesslist_ids) . ');
+            </script>';
+
 
             $acc_raw = $exam_row['accesslists'];
 
