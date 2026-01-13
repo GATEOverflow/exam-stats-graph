@@ -29,7 +29,7 @@ class qa_exam_stats_graph {
 
         if ($exam_count == 0) return;
 
-        if ($userid != $logged_in_userid && (qa_get_logged_in_level() < QA_USER_LEVEL_ADMIN)){
+        if ($userid != $logged_in_userid && (qa_get_logged_in_level() < QA_USER_LEVEL_SUPER)){
             // echo "<script>console.log('Exam Stats Graph Hidden: Other users stats cannot be viewed');</script>";
             return;
         }
@@ -106,7 +106,7 @@ class qa_exam_stats_graph {
                     };
                 }
 
-                console.log(data);
+                // console.log(data);
                 // console.log(statsData.perf.exam_names);
 
 
