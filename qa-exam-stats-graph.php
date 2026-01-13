@@ -106,7 +106,7 @@ class qa_exam_stats_graph {
                     };
                 }
 
-                // console.log(data);
+                console.log(data);
                 // console.log(statsData.perf.exam_names);
 
 
