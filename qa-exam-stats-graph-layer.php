@@ -10,7 +10,7 @@ class qa_html_theme_layer extends qa_html_theme_base {
             .qa-exam-stats-container {
                 margin: 10px 30px 10px 30px;
                 padding: 25px;
-                background: #ffffff;
+                background: inherit !important;
                 border-radius: 12px;
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
                 border: 1px solid #e5e7eb;
@@ -192,7 +192,7 @@ class qa_html_theme_layer extends qa_html_theme_base {
             [data-theme="dark"] .qa-exam-stats-no-data,
             [data-theme="dark"] .qa-exam-stats-select,
             [data-theme="dark"] .qa-exam-stats-chart-canvas {
-                background-color: #36393f !important;
+                background-color: inherit !important;
                 border-color: #2e3138ff !important;
                 color: #f9f9f9 !important;
             }
@@ -202,7 +202,7 @@ class qa_html_theme_layer extends qa_html_theme_base {
             [data-theme="dark"] .qa-exam-stats-chart-wrapper,
             [data-theme="dark"] .qa-exam-stats-container {
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                background-color: #36393f;
+                background-color: inherit !important; 
                 border-color: #2e3138ff;
                 color: #f9f9f9 !important;
                 
