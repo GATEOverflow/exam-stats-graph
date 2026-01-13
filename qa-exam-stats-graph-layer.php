@@ -200,8 +200,7 @@ class qa_html_theme_layer extends qa_html_theme_base {
                 color: #6b7280;
             }
             [data-theme="dark"] .qa-exam-stats-chart-wrapper,
-            [data-theme="dark"] .qa-exam-stats-container,
-            [data-theme="dark"] {
+            [data-theme="dark"] .qa-exam-stats-container {
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
                 background-color: #36393f;
                 border-color: #2e3138ff;
