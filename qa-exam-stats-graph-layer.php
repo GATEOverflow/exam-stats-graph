@@ -63,7 +63,7 @@ class qa_html_theme_layer extends qa_html_theme_base {
                 font-size: 14px;
                 border: 2px solid #d1d5db;
                 border-radius: 8px;
-                background-color: #ffffff;
+                background-color: inherit !important;
                 color: #1f2937;
                 cursor: pointer;
                 transition: all 0.3s ease;
@@ -208,7 +208,11 @@ class qa_html_theme_layer extends qa_html_theme_base {
                 color: #f9f9f9 !important;
                 
             }
-            
+            [data-theme="dark"] .qa-exam-stats-select option, optgroup {
+                background-color: #2e3138ff !important;
+                border-color: #2e3138ff;
+                color: #f9f9f9 !important;
+            }
             /* Animation for chart appearance */
             @keyframes fadeIn {
                 from {
