@@ -32,16 +32,17 @@ class qa_exam_stats_graph {
 
         if ($exam_count == 0) return;
 
-        // Handle privacy toggle POST (default is private when meta not set)
+        // Handle privacy toggle POST (default is PRIVATE: meta exam_stats_public not set = private)
         if ($is_owner && isset($_POST['exam_stats_toggle_privacy'])) {
-            $current = qa_db_usermeta_get($userid, 'exam_stats_public');
-            $is_private = $current ? 1 : 0; // toggle: was public, now private and vice versa
-            qa_db_usermeta_set($userid, 'exam_stats_public', $is_private ? 0 : 1);
+            $current = (int) qa_db_usermeta_get($userid, 'exam_stats_public');
+            $new_public = $current ? 0 : 1;
+            qa_db_usermeta_set($userid, 'exam_stats_public', $new_public);
+            $is_private = !$new_public;
         } else {
             $is_private = !((int) qa_db_usermeta_get($userid, 'exam_stats_public'));
         }
 
-        // Check privacy: if set to private, only owner and admins can see
+        // Check privacy: if private, only owner and admins can see
         if ($is_private && !$is_owner && !$is_admin) {
             return;
         }
