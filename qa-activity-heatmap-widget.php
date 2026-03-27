@@ -49,14 +49,6 @@ class qa_activity_heatmap_widget {
         $is_owner = ($loggedin_userid == $target_userid);
         $is_admin = (qa_get_logged_in_level() >= QA_USER_LEVEL_ADMIN);
 
-        // Handle privacy toggle POST
-        if ($is_owner && qa_post_text('heatmap_toggle_privacy') !== null) {
-            $current = qa_db_usermeta_get($target_userid, 'heatmap_private');
-            qa_db_usermeta_set($target_userid, 'heatmap_private', $current ? 0 : 1);
-            header('Location: ' . qa_path_html('user/' . $handle));
-            exit;
-        }
-
         // Privacy check: public by default (heatmap_private NULL/0 = public, 1 = private)
         $is_private = (int)qa_db_usermeta_get($target_userid, 'heatmap_private');
         if ($is_private && !$is_owner && !$is_admin) {
@@ -66,14 +58,12 @@ class qa_activity_heatmap_widget {
         $exam_data = $this->get_exam_data($target_userid); 
         $json = json_encode($exam_data);
 
-        // Privacy toggle button for owner
+        // Privacy toggle button for owner (AJAX-based)
         $privacy_btn = '';
         if ($is_owner) {
             $lock_icon = $is_private ? '&#128274;' : '&#128275;';
             $label = $is_private ? 'Private' : 'Public';
-            $privacy_btn = '<form method="post" style="display:inline; margin-left:10px;">
-                <button type="submit" name="heatmap_toggle_privacy" value="1" class="qa-heatmap-privacy-btn" title="Toggle privacy">' . $lock_icon . ' ' . $label . '</button>
-            </form>';
+            $privacy_btn = '<button type="button" id="heatmap-privacy-btn" class="qa-heatmap-privacy-btn" title="Toggle privacy" data-private="' . ($is_private ? '1' : '0') . '">' . $lock_icon . ' ' . $label . '</button>';
         }
         $admin_note = (!$is_owner && $is_admin && $is_private) ? ' <span style="color:#c00;font-size:12px;">(Hidden from public)</span>' : '';
 
@@ -245,8 +235,37 @@ class qa_activity_heatmap_widget {
                     window.initActivityHeatmap(e.target.value);
                 });
             }
+
+            // AJAX privacy toggle for heatmap
+            const hbtn = document.getElementById('heatmap-privacy-btn');
+            if (hbtn) {
+                hbtn.addEventListener('click', function() {
+                    hbtn.disabled = true;
+                    hbtn.style.opacity = '0.5';
+                    fetch(window.location.href, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest'},
+                        body: 'ajax_heatmap_toggle_privacy=1'
+                    }).then(r => r.json()).then(data => {
+                        if (data.success) {
+                            const p = data.is_private;
+                            hbtn.dataset.private = p ? '1' : '0';
+                            hbtn.innerHTML = (p ? '&#128274; Private' : '&#128275; Public');
+                        }
+                    }).catch(() => {}).finally(() => { hbtn.disabled = false; hbtn.style.opacity = '1'; });
+                });
+            }
         });
         </script>
         ");
+
+        // Handle AJAX privacy toggle
+        if ($is_owner && isset($_POST['ajax_heatmap_toggle_privacy']) && !empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+            $current = (int)qa_db_usermeta_get($target_userid, 'heatmap_private');
+            qa_db_usermeta_set($target_userid, 'heatmap_private', $current ? 0 : 1);
+            header('Content-Type: application/json');
+            echo json_encode(['success' => true, 'is_private' => !$current]);
+            exit;
+        }
     }
 }

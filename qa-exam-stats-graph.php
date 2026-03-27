@@ -32,38 +32,28 @@ class qa_exam_stats_graph {
 
         if ($exam_count == 0) return;
 
-        // Handle privacy toggle POST (default is PRIVATE: meta exam_stats_public not set = private)
-        if ($is_owner && isset($_POST['exam_stats_toggle_privacy'])) {
-            $current = (int) qa_db_usermeta_get($userid, 'exam_stats_public');
-            $new_public = $current ? 0 : 1;
-            qa_db_usermeta_set($userid, 'exam_stats_public', $new_public);
-            $is_private = !$new_public;
-        } else {
-            $is_private = !((int) qa_db_usermeta_get($userid, 'exam_stats_public'));
-        }
+        // Privacy check (default is PRIVATE: meta exam_stats_public not set = private)
+        $is_private = !((int) qa_db_usermeta_get($userid, 'exam_stats_public'));
 
         // Check privacy: if private, only owner and admins can see
         if ($is_private && !$is_owner && !$is_admin) {
             return;
         }
 
-        $data = self::get_stats_data($userid);
+        $data = self::get_stats_data_cached($userid, $exam_count);
 
-        // Privacy toggle for owner
+        // Privacy toggle for owner (AJAX-based)
         $privacy_html = '';
         if ($is_owner) {
-            $privacy_icon = $is_private
-                ? '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>'
-                : '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>';
+            $privacy_icon_locked = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>';
+            $privacy_icon_unlocked = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>';
+            $privacy_icon = $is_private ? $privacy_icon_locked : $privacy_icon_unlocked;
             $privacy_label = $is_private ? 'Private (only you can see this)' : 'Public (visible to all)';
             $privacy_html = '
-                <form method="post" style="display:inline;">
-                    <input type="hidden" name="exam_stats_toggle_privacy" value="1">
-                    <button type="submit" class="qa-exam-stats-privacy-btn" title="' . qa_html($privacy_label) . '">
-                        ' . $privacy_icon . '
-                        <span>' . qa_html($privacy_label) . '</span>
-                    </button>
-                </form>';
+                    <button type="button" id="exam-stats-privacy-btn" class="qa-exam-stats-privacy-btn" title="' . qa_html($privacy_label) . '" data-private="' . ($is_private ? '1' : '0') . '" data-userid="' . qa_html($userid) . '">
+                        <span class="privacy-icon">' . $privacy_icon . '</span>
+                        <span class="privacy-label">' . qa_html($privacy_label) . '</span>
+                    </button>';
         }
 
         echo '
@@ -476,7 +466,43 @@ class qa_exam_stats_graph {
             });
                     
         })();
+
+        // AJAX privacy toggle for exam stats
+        (function() {
+            const btn = document.getElementById("exam-stats-privacy-btn");
+            if (!btn) return;
+            btn.addEventListener("click", function() {
+                const isPrivate = btn.dataset.private === "1";
+                btn.disabled = true;
+                btn.style.opacity = "0.5";
+                fetch(window.location.href, {
+                    method: "POST",
+                    headers: {"Content-Type": "application/x-www-form-urlencoded", "X-Requested-With": "XMLHttpRequest"},
+                    body: "ajax_exam_stats_toggle_privacy=1"
+                }).then(r => r.json()).then(data => {
+                    if (data.success) {
+                        const newPrivate = data.is_private;
+                        btn.dataset.private = newPrivate ? "1" : "0";
+                        btn.querySelector(".privacy-label").textContent = newPrivate ? "Private (only you can see this)" : "Public (visible to all)";
+                        btn.title = newPrivate ? "Private (only you can see this)" : "Public (visible to all)";
+                        btn.querySelector(".privacy-icon").innerHTML = newPrivate
+                            ? \'<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>\'
+                            : \'<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>\';
+                    }
+                }).catch(() => {}).finally(() => { btn.disabled = false; btn.style.opacity = "1"; });
+            });
+        })();
         </script>';
+
+        // Handle AJAX privacy toggle
+        if ($is_owner && isset($_POST['ajax_exam_stats_toggle_privacy']) && !empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+            $current = (int) qa_db_usermeta_get($userid, 'exam_stats_public');
+            $new_public = $current ? 0 : 1;
+            qa_db_usermeta_set($userid, 'exam_stats_public', $new_public);
+            header('Content-Type: application/json');
+            echo json_encode(['success' => true, 'is_private' => !$new_public]);
+            exit;
+        }
     }
 
     
@@ -484,6 +510,34 @@ class qa_exam_stats_graph {
         return null;
     }
       
+    public static function get_stats_data_cached($userid, $exam_count) {
+        $cache_dir = (defined('QA_CACHE_DIRECTORY') ? QA_CACHE_DIRECTORY : '/tmp') . '/exam_stats';
+        if (!is_dir($cache_dir)) {
+            @mkdir($cache_dir, 0777, true);
+        }
+        $cache_file = $cache_dir . '/' . intval($userid) . '.json';
+        
+        if (file_exists($cache_file)) {
+            $cached = json_decode(file_get_contents($cache_file), true);
+            // Invalidate if exam count changed or cache is older than 1 hour
+            if ($cached && isset($cached['_exam_count']) && $cached['_exam_count'] == $exam_count 
+                && isset($cached['_time']) && (time() - $cached['_time']) < 3600) {
+                unset($cached['_exam_count'], $cached['_time']);
+                return $cached;
+            }
+        }
+        
+        $data = self::get_stats_data($userid);
+        
+        // Save to cache
+        $cache_data = $data;
+        $cache_data['_exam_count'] = $exam_count;
+        $cache_data['_time'] = time();
+        file_put_contents($cache_file, json_encode($cache_data));
+        
+        return $data;
+    }
+
     public static function get_stats_data($userid) {
         // require_once('/var/www/html/qa/qa-plugin/exam-creator/db/selects.php');
         
