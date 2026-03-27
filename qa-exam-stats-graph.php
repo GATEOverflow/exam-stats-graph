@@ -9,7 +9,7 @@ class qa_exam_stats_graph {
 
     public function allow_template($template)
     {
-        return true;
+        return ($template === 'user');
     }
 
     public function allow_region($region)
@@ -22,6 +22,9 @@ class qa_exam_stats_graph {
         $handle = qa_request_part(1); 
         $userid = qa_handle_to_userid($handle);
         $logged_in_userid = qa_get_logged_in_userid();
+        $is_owner = ($userid == $logged_in_userid && $logged_in_userid !== null);
+        $is_admin = (qa_get_logged_in_level() >= QA_USER_LEVEL_SUPER);
+
         $exam_count = qa_db_read_one_value(qa_db_query_sub(
             "SELECT COUNT(*) FROM ^exam_results WHERE userid = #",
             $userid
@@ -29,16 +32,46 @@ class qa_exam_stats_graph {
 
         if ($exam_count == 0) return;
 
-        if ($userid != $logged_in_userid && (qa_get_logged_in_level() < QA_USER_LEVEL_SUPER)){
-            // echo "<script>console.log('Exam Stats Graph Hidden: Other users stats cannot be viewed');</script>";
+        // Handle privacy toggle POST
+        if ($is_owner && isset($_POST['exam_stats_toggle_privacy'])) {
+            $current = qa_db_usermeta_get($userid, 'exam_stats_private');
+            $is_private = $current ? 0 : 1;
+            qa_db_usermeta_set($userid, 'exam_stats_private', $is_private);
+        } else {
+            $is_private = (int) qa_db_usermeta_get($userid, 'exam_stats_private');
+        }
+
+        // Check privacy: if set to private, only owner and admins can see
+        if ($is_private && !$is_owner && !$is_admin) {
             return;
         }
+
         $data = self::get_stats_data($userid);
+
+        // Privacy toggle for owner
+        $privacy_html = '';
+        if ($is_owner) {
+            $privacy_icon = $is_private
+                ? '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>'
+                : '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>';
+            $privacy_label = $is_private ? 'Private (only you can see this)' : 'Public (visible to all)';
+            $privacy_html = '
+                <form method="post" style="display:inline;">
+                    <input type="hidden" name="exam_stats_toggle_privacy" value="1">
+                    <button type="submit" class="qa-exam-stats-privacy-btn" title="' . qa_html($privacy_label) . '">
+                        ' . $privacy_icon . '
+                        <span>' . qa_html($privacy_label) . '</span>
+                    </button>
+                </form>';
+        }
 
         echo '
         <div class="qa-exam-stats-container">
             <div class="qa-exam-stats-header">
-                <div class="qa-exam-stats-title">Exam Statistics</div>
+                <div class="qa-exam-stats-title-row">
+                    <div class="qa-exam-stats-title">Exam Statistics</div>
+                    ' . $privacy_html . '
+                </div>
                 <p class="qa-exam-stats-subtitle">Analyze your performance across different categories</p>
             </div>
             

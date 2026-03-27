@@ -29,12 +29,38 @@ class qa_html_theme_layer extends qa_html_theme_base {
                 padding-bottom: 5px;
                 border-bottom: 2px solid #f3f4f6;
             }
+
+            .qa-exam-stats-title-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 15px;
+            }
             
             .qa-exam-stats-title {
                 font-size: 30px;
                 font-weight: 500;
                 color: #1f2937;
                 margin: 5px 0 10px 15px; //top right bottom left
+            }
+
+            .qa-exam-stats-privacy-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 6px 14px;
+                border: 1px solid #d1d5db;
+                border-radius: 6px;
+                background: #f9fafb;
+                color: #374151;
+                font-size: 13px;
+                cursor: pointer;
+                transition: all 0.2s;
+                margin-right: 15px;
+            }
+            .qa-exam-stats-privacy-btn:hover {
+                background: #f3f4f6;
+                border-color: #9ca3af;
             }
             
             .qa-exam-stats-subtitle {
@@ -211,6 +237,15 @@ class qa_html_theme_layer extends qa_html_theme_base {
                 background-color: #2e3138ff !important;
                 border-color: #2e3138ff;
                 color: #f9f9f9 !important;
+            }
+            [data-theme="dark"] .qa-exam-stats-privacy-btn {
+                background: #2e3138;
+                border-color: #4b5563;
+                color: #e5e7eb;
+            }
+            [data-theme="dark"] .qa-exam-stats-privacy-btn:hover {
+                background: #374151;
+                border-color: #6b7280;
             }
             /* Animation for chart appearance */
             @keyframes fadeIn {
