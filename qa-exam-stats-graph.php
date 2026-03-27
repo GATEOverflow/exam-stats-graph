@@ -40,8 +40,6 @@ class qa_exam_stats_graph {
             return;
         }
 
-        $data = self::get_stats_data_cached($userid, $exam_count);
-
         // Privacy toggle for owner (AJAX-based)
         $privacy_html = '';
         if ($is_owner) {
@@ -66,7 +64,7 @@ class qa_exam_stats_graph {
                 <p class="qa-exam-stats-subtitle">Analyze your performance across different categories</p>
             </div>
             
-            <div class="qa-exam-stats-controls">
+            <div class="qa-exam-stats-controls" style="display:none">
                 <label for="exam-stats-category" class="qa-exam-stats-label">View Statistics By:</label>
                 <select id="exam-stats-category" class="qa-exam-stats-select">
                     <option value="difficulty" selected>Difficulty Level</option>
@@ -76,8 +74,13 @@ class qa_exam_stats_graph {
                     <optgroup label="Exam Performance by Accesslist" id="accesslist-group"></optgroup>
                 </select>
             </div>
+
+            <div id="exam-stats-loading" class="qa-exam-stats-loading">
+                <div class="exam-stats-spinner"></div>
+                <p>Loading exam statistics...</p>
+            </div>
             
-            <div class="qa-exam-stats-chart-wrapper">
+            <div class="qa-exam-stats-chart-wrapper" style="display:none">
                 <canvas id="examStatsChart" class="qa-exam-stats-chart-canvas"></canvas>
             </div>
         </div>
@@ -86,10 +89,7 @@ class qa_exam_stats_graph {
         
         (function() {
         
-            const statsData = ';
-            echo json_encode($data);
-            echo ';
-
+            let statsData = null;
             let currentChart = null;
 
             function createPerformanceChart(accesslistFilter = null) {
@@ -417,53 +417,65 @@ class qa_exam_stats_graph {
             }
            
             
-            window.addEventListener("DOMContentLoaded", () => {
-                const select = document.getElementById("exam-stats-category");
+            // AJAX fetch exam stats data
+            fetch(window.location.href, {
+                method: "POST",
+                headers: {"Content-Type": "application/x-www-form-urlencoded", "X-Requested-With": "XMLHttpRequest"},
+                body: "ajax_exam_stats_get_data=1"
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    statsData = data.stats;
+                    initCharts();
+                } else {
+                    document.getElementById("exam-stats-loading").innerHTML = "<p>Could not load exam statistics.</p>";
+                }
+            }).catch(() => {
+                document.getElementById("exam-stats-loading").innerHTML = "<p>Could not load exam statistics.</p>";
+            });
 
-                // Force dropdown to show Difficulty
+            function initCharts() {
+                document.getElementById("exam-stats-loading").style.display = "none";
+                document.querySelector(".qa-exam-stats-controls").style.display = "";
+                document.querySelector(".qa-exam-stats-chart-wrapper").style.display = "";
+
+                const select = document.getElementById("exam-stats-category");
                 select.value = "difficulty";
                 requestAnimationFrame(() => createChart("difficulty"));
-            });    
-            document.addEventListener("DOMContentLoaded", function () {
+
                 const allowedDomains = ["gateoverflow.in", "surabi.gateoverflow.in", "db.gateoverflow.in"];
                 const hostname = window.location.hostname;
-            
                 if (!allowedDomains.includes(hostname)) {
                     const subjectOption = document.querySelector("#exam-stats-category option[value=\"subject\"]");
                     if (subjectOption) subjectOption.remove();
                 }
-            });
-            
-            const accesslistGroup = document.getElementById("accesslist-group");
 
-            Object.keys(statsData.accesslist).forEach(key => {
-                const item = statsData.accesslist[key];
-                const option = document.createElement("option");
-                option.value = "perf_" + key;
-                option.textContent = item.label + ` (${item.count})`;
-                accesslistGroup.appendChild(option);
-            });
+                const accesslistGroup = document.getElementById("accesslist-group");
+                Object.keys(statsData.accesslist).forEach(key => {
+                    const item = statsData.accesslist[key];
+                    const option = document.createElement("option");
+                    option.value = "perf_" + key;
+                    option.textContent = item.label + ` (${item.count})`;
+                    accesslistGroup.appendChild(option);
+                });
 
-                
-            // Update chart when category changes
-            const categorySelect = document.getElementById("exam-stats-category");
-            categorySelect.addEventListener("change", function (e) {
-                const value = e.target.value;
-                if (value === "perf") {
-                    createPerformanceChart(); // Overall performance
-                }
-                else if (value.startsWith("perf_")) {
-                    const acc = value.replace("perf_", "");
-                    createPerformanceChart(acc); // filtered
-                }
-                else {
-                    requestAnimationFrame(() => {
+                select.addEventListener("change", function (e) {
+                    const value = e.target.value;
+                    if (value === "perf") {
+                        createPerformanceChart();
+                    }
+                    else if (value.startsWith("perf_")) {
+                        const acc = value.replace("perf_", "");
+                        createPerformanceChart(acc);
+                    }
+                    else {
                         requestAnimationFrame(() => {
-                            createChart(e.target.value);
+                            requestAnimationFrame(() => {
+                                createChart(e.target.value);
+                            });
                         });
-                    });
-                }
-            });
+                    }
+                });
+            }
                     
         })();
 

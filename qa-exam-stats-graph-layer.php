@@ -35,6 +35,31 @@ class qa_html_theme_layer extends qa_html_theme_base {
                 }
                 if ($handled) exit;
             }
+
+            // AJAX data fetch - accessible to anyone with view permission
+            if (isset($_POST['ajax_exam_stats_get_data']) && $userid) {
+                $is_admin = (qa_get_logged_in_level() >= QA_USER_LEVEL_SUPER);
+                $is_private = !((int) qa_db_usermeta_get($userid, 'exam_stats_public'));
+
+                if (!$is_private || $is_owner || $is_admin) {
+                    $exam_count = qa_db_read_one_value(qa_db_query_sub(
+                        "SELECT COUNT(*) FROM ^exam_results WHERE userid = #",
+                        $userid
+                    ), true);
+
+                    if ($exam_count > 0) {
+                        require_once QA_PLUGIN_DIR . 'exam-stats-graph/qa-exam-stats-graph.php';
+                        $data = qa_exam_stats_graph::get_stats_data_cached($userid, $exam_count);
+                        header('Content-Type: application/json');
+                        echo json_encode(['success' => true, 'stats' => $data]);
+                        exit;
+                    }
+                }
+
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false]);
+                exit;
+            }
         }
         parent::doctype();
     }
@@ -79,6 +104,28 @@ class qa_html_theme_layer extends qa_html_theme_base {
                 font-weight: 500;
                 color: #1f2937;
                 margin: 5px 0 10px 15px; //top right bottom left
+            }
+
+            .qa-exam-stats-loading {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 80px 20px;
+                color: #6b7280;
+                font-size: 14px;
+            }
+            .exam-stats-spinner {
+                width: 36px;
+                height: 36px;
+                border: 3px solid #e5e7eb;
+                border-top-color: #3b82f6;
+                border-radius: 50%;
+                animation: exam-stats-spin 0.8s linear infinite;
+                margin-bottom: 12px;
+            }
+            @keyframes exam-stats-spin {
+                to { transform: rotate(360deg); }
             }
 
             .qa-exam-stats-privacy-btn {
