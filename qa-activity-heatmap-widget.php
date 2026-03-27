@@ -258,14 +258,5 @@ class qa_activity_heatmap_widget {
         });
         </script>
         ");
-
-        // Handle AJAX privacy toggle
-        if ($is_owner && isset($_POST['ajax_heatmap_toggle_privacy']) && !empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-            $current = (int)qa_db_usermeta_get($target_userid, 'heatmap_private');
-            qa_db_usermeta_set($target_userid, 'heatmap_private', $current ? 0 : 1);
-            header('Content-Type: application/json');
-            echo json_encode(['success' => true, 'is_private' => !$current]);
-            exit;
-        }
     }
 }

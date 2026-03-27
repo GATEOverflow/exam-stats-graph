@@ -1,7 +1,44 @@
 <?php
 
 class qa_html_theme_layer extends qa_html_theme_base {
-    
+
+    public function doctype() {
+        // Handle AJAX privacy toggles before any HTML output
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+            $handle = qa_request_part(1);
+            $userid = $handle ? qa_handle_to_userid($handle) : null;
+            $logged_in_userid = qa_get_logged_in_userid();
+            $is_owner = ($userid && $logged_in_userid && $logged_in_userid == $userid);
+
+            if ($is_owner && $userid) {
+                $handled = false;
+                if (isset($_POST['ajax_exam_stats_toggle_privacy'])) {
+                    $current = (int) qa_db_usermeta_get($userid, 'exam_stats_public');
+                    $new_public = $current ? 0 : 1;
+                    qa_db_usermeta_set($userid, 'exam_stats_public', $new_public);
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => true, 'is_private' => !$new_public]);
+                    $handled = true;
+                } elseif (isset($_POST['ajax_heatmap_toggle_privacy'])) {
+                    $current = (int) qa_db_usermeta_get($userid, 'heatmap_private');
+                    qa_db_usermeta_set($userid, 'heatmap_private', $current ? 0 : 1);
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => true, 'is_private' => !$current]);
+                    $handled = true;
+                } elseif (isset($_POST['ajax_pointschart_toggle_privacy'])) {
+                    $current = (int) qa_db_usermeta_get($userid, 'pointschart_private');
+                    $new_private = $current ? 0 : 1;
+                    qa_db_usermeta_set($userid, 'pointschart_private', $new_private);
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => true, 'is_private' => (bool)$new_private]);
+                    $handled = true;
+                }
+                if ($handled) exit;
+            }
+        }
+        parent::doctype();
+    }
+
     public function head_css() {
         parent::head_css();
         

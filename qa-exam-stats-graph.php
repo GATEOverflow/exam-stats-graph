@@ -493,16 +493,6 @@ class qa_exam_stats_graph {
             });
         })();
         </script>';
-
-        // Handle AJAX privacy toggle
-        if ($is_owner && isset($_POST['ajax_exam_stats_toggle_privacy']) && !empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-            $current = (int) qa_db_usermeta_get($userid, 'exam_stats_public');
-            $new_public = $current ? 0 : 1;
-            qa_db_usermeta_set($userid, 'exam_stats_public', $new_public);
-            header('Content-Type: application/json');
-            echo json_encode(['success' => true, 'is_private' => !$new_public]);
-            exit;
-        }
     }
 
     
