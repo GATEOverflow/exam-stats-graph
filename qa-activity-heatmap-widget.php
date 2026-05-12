@@ -39,6 +39,7 @@ class qa_activity_heatmap_widget {
     function output_widget($region, $place, $themeobject, $template, $request, $qa_content) {
         $handle = qa_request_part(1); 
         $target_userid = qa_handle_to_userid($handle);
+        $ajax_url = qa_path('exam-stats-ajax');
         
         if (!$target_userid) {
             $themeobject->output('<div class="qa-widget-content">No user found.</div>');
@@ -242,7 +243,7 @@ class qa_activity_heatmap_widget {
                 hbtn.addEventListener('click', function() {
                     hbtn.disabled = true;
                     hbtn.style.opacity = '0.5';
-                    fetch(window.location.href, {
+                    fetch(
                         method: 'POST',
                         headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest'},
                         body: 'ajax_heatmap_toggle_privacy=1'

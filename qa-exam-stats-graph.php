@@ -21,9 +21,14 @@ class qa_exam_stats_graph {
     {   
         $handle = qa_request_part(1); 
         $userid = qa_handle_to_userid($handle);
+        if (!$userid) {
+            return;
+        }
+
         $logged_in_userid = qa_get_logged_in_userid();
         $is_owner = ($userid == $logged_in_userid && $logged_in_userid !== null);
         $is_admin = (qa_get_logged_in_level() >= QA_USER_LEVEL_SUPER);
+        $ajax_url = qa_path('exam-stats-ajax');
 
         $exam_count = qa_db_read_one_value(qa_db_query_sub(
             "SELECT COUNT(*) FROM ^exam_results WHERE userid = #",
@@ -54,7 +59,7 @@ class qa_exam_stats_graph {
                     </button>';
         }
 
-        echo '
+        $themeobject->output('
         <div class="qa-exam-stats-container">
             <div class="qa-exam-stats-header">
                 <div class="qa-exam-stats-title-row">
@@ -418,10 +423,10 @@ class qa_exam_stats_graph {
            
             
             // AJAX fetch exam stats data
-            fetch(window.location.href, {
+            fetch(' . qa_js($ajax_url) . ', {
                 method: "POST",
-                headers: {"Content-Type": "application/x-www-form-urlencoded", "X-Requested-With": "XMLHttpRequest"},
-                body: "ajax_exam_stats_get_data=1"
+                headers: {"Content-Type": "application/x-www-form-urlencoded"},
+                body: "action=get_exam_stats_data&userid=' . (int) $userid . '"
             }).then(r => r.json()).then(data => {
                 if (data.success) {
                     statsData = data.stats;
@@ -484,13 +489,12 @@ class qa_exam_stats_graph {
             const btn = document.getElementById("exam-stats-privacy-btn");
             if (!btn) return;
             btn.addEventListener("click", function() {
-                const isPrivate = btn.dataset.private === "1";
                 btn.disabled = true;
                 btn.style.opacity = "0.5";
-                fetch(window.location.href, {
+                fetch(' . qa_js($ajax_url) . ', {
                     method: "POST",
-                    headers: {"Content-Type": "application/x-www-form-urlencoded", "X-Requested-With": "XMLHttpRequest"},
-                    body: "ajax_exam_stats_toggle_privacy=1"
+                    headers: {"Content-Type": "application/x-www-form-urlencoded"},
+                    body: "action=toggle_exam_stats_privacy&userid=' . (int) $userid . '"
                 }).then(r => r.json()).then(data => {
                     if (data.success) {
                         const newPrivate = data.is_private;
@@ -504,7 +508,7 @@ class qa_exam_stats_graph {
                 }).catch(() => {}).finally(() => { btn.disabled = false; btn.style.opacity = "1"; });
             });
         })();
-        </script>';
+        </script>');
     }
 
     

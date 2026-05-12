@@ -16,6 +16,13 @@ qa_register_plugin_module(
     'Activity Heatmap Widget'
 );
 
+qa_register_plugin_module(
+    'page',
+    'qa-exam-stats-ajax.php',
+    'qa_exam_stats_ajax_page',
+    'Exam Stats AJAX Handler'
+);
+
 qa_register_plugin_layer(
     'qa-exam-stats-graph-layer.php', 
     'Exam Question Statistics Graph Layer'
