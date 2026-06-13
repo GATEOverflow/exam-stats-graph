@@ -662,7 +662,6 @@ class qa_exam_stats_graph {
             );
             $date_array[$resultid] = $result['datetime'];
 
-            require_once('/var/www/html/qa/qa-plugin/exam-creator/qa-ec-view-accesslist.php');
             $accesslist_ids_raw = qa_db_usermeta_get($userid, 'accesslists');
 
             $accesslist_ids = array_filter(
