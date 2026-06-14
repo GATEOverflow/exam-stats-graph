@@ -21,7 +21,7 @@ class qa_exam_stats_ajax_page
     {
         header('Content-Type: application/json; charset=utf-8');
 
-        if (strtoupper(qa_get_request_method()) !== 'POST') {
+        if (strtoupper($_SERVER['REQUEST_METHOD']) !== 'POST') {
             $this->send_response(['success' => false, 'error' => 'Invalid request method.']);
         }
 
