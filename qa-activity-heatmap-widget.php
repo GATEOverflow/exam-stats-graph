@@ -243,10 +243,10 @@ class qa_activity_heatmap_widget {
                 hbtn.addEventListener('click', function() {
                     hbtn.disabled = true;
                     hbtn.style.opacity = '0.5';
-                    fetch(
+                    fetch('" . qa_path_html('exam-stats-ajax') . "', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest'},
-                        body: 'ajax_heatmap_toggle_privacy=1'
+                        body: 'action=toggle_heatmap_privacy&userid=" . (int)$target_userid . "'
                     }).then(r => r.json()).then(data => {
                         if (data.success) {
                             const p = data.is_private;
