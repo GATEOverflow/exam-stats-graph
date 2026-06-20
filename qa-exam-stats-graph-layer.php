@@ -342,12 +342,12 @@ class qa_html_theme_layer extends qa_html_theme_base {
                 }
                 [data-theme="dark"] .ch-container,
                 .dark .ch-container .year-filter {
-                    background-color: #36393f;
+                    background-color: inherit !important;
                     color: #f9f9f9;
                 }
                 [data-theme="dark"] #activity-heatmap,
                 .dark #activity-heatmap {
-                    background-color: #36393f !important;
+                    background-color: inherit !important;
                 }
                 .qa-heatmap-title-row {
                     display: flex;
