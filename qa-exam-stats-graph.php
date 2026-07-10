@@ -4,6 +4,7 @@ if (!defined('QA_VERSION')) {
     header('Location: ../../');
     exit;
 }
+require_once QA_PLUGIN_DIR . 'exam-creator/db/selects.php';
 
 class qa_exam_stats_graph {
 
