@@ -784,7 +784,7 @@ class qa_exam_stats_graph {
                         $panswers= explode(";", $c);
                         foreach($panswers as $panswer)
                         {
-                            $correct_answers[$jj][]=mapalphabettodigit(trim(strtolower($panswer)));
+                            $correct_answers[$jj][]=mapalphabettodigit(trim(strtolower($panswer ?? '')));
                         }
                     }
                     $status = calc_response_status($correct_answers, $user_response, $qtype);
@@ -799,7 +799,7 @@ class qa_exam_stats_graph {
                     $isSkipped   = ($status == 0);
                     
                     //Subject Area
-                    $category_lower = strtolower(trim($qs_array[$j]['category']));
+                    $category_lower = strtolower(trim($qs_array[$j]['category'] ?? ''));
                     $mapped = $subject_map[$category_lower] ?? 'Other';
                     self::update_stat($subject_stats[$mapped], $isAttempted, $isCorrect, $isSkipped);
 
@@ -807,7 +807,7 @@ class qa_exam_stats_graph {
                     $question_type = 'MCQ'; // default
 
                     foreach ($tags as $tag) {
-                        $tag_lower = strtolower($tag);
+                        $tag_lower = strtolower($tag ?? '');
                         if (isset($type_map[$tag_lower])) {
                             $question_type = $type_map[$tag_lower];
                             break;
