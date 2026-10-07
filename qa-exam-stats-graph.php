@@ -912,8 +912,8 @@ class qa_exam_stats_graph {
     }
 
     private static function update_stat(&$stat, $isAttempted, $isCorrect, $isSkipped) {
-        if ($isAttempted) $stat['attempted']++;
-        if ($isCorrect) $stat['correct']++;
-        if ($isSkipped) $stat['skipped']++;
+        if ($isAttempted) $stat['attempted'] = ($stat['attempted'] ?? 0) + 1;
+        if ($isCorrect) $stat['correct'] = ($stat['correct'] ?? 0) + 1;
+        if ($isSkipped) $stat['skipped'] = ($stat['skipped'] ?? 0) + 1;
     }
 }
