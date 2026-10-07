@@ -842,6 +842,7 @@ class qa_exam_stats_graph {
                     self::update_stat($difficulty_stats[$question_difficulty], $isAttempted, $isCorrect, $isSkipped);
 
                     //Mark based tags
+                    $marks_found = false;
                     foreach ($tags as $tag) {
                         $tag_lower = strtolower(trim($tag));
 
