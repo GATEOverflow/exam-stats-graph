@@ -771,7 +771,7 @@ class qa_exam_stats_graph {
                     $qtype = $qs_array[$j]['type'];
                     $tags = array_map('trim', explode(',', $qs_array[$j]['tags']));
                     $category = $qs_array[$j]['category'];
-                    $category_dict[$category] += 1;
+                    $category_dict[$category] = ($category_dict[$category] ?? 0) + 1;
                     $responses = json_decode(stripslashes($result['responsestring']), true);
                     $user_response = $response_table[$postid];
 
